@@ -4,7 +4,7 @@
 import math
 import sys
 
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QAction
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QFrame, QLabel,
     QVBoxLayout, QHBoxLayout, QPushButton, QSlider
@@ -50,6 +50,19 @@ class SpritePreview(QMainWindow):
         self.setupUI()
 
     def setupUI(self):
+        # ===== Menu =====
+        menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu("File")
+
+        pause_action = QAction("Pause", self)
+        pause_action.triggered.connect(self.pause_animation)
+        file_menu.addAction(pause_action)
+
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+
+        # ===== Main Window Content =====
         frame = QFrame()
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(20, 20, 20, 20)
@@ -139,6 +152,10 @@ class SpritePreview(QMainWindow):
         else:
             self.timer.stop()
             self.start_button.setText("Start")
+
+    def pause_animation(self):
+        self.timer.stop()
+        self.start_button.setText("Start")
 
 
 def main():
