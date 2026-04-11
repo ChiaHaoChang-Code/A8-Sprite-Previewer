@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QFrame, QLabel,
     QVBoxLayout, QHBoxLayout, QPushButton, QSlider
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 
 
 # This function loads a series of sprite images stored in a folder with a
@@ -40,6 +40,11 @@ class SpritePreview(QMainWindow):
 
         # Current fps value
         self.fps = 1
+        self.timer_delay = int(1000 / self.fps)
+
+        # Timer for animation
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.next_frame)
 
         # Make the GUI in the setupUI method
         self.setupUI()
@@ -64,7 +69,7 @@ class SpritePreview(QMainWindow):
         self.fps_slider.setValue(self.fps)
         self.fps_slider.setTickPosition(QSlider.TickPosition.TicksBothSides)
         self.fps_slider.setTickInterval(10)
-        self.fps_slider.valueChanged.connect(self.update_fps_label)
+        self.fps_slider.valueChanged.connect(self.update_fps)
 
         top_layout.addWidget(self.image_label)
         top_layout.addWidget(self.fps_slider)
@@ -83,9 +88,10 @@ class SpritePreview(QMainWindow):
         fps_layout.addSpacing(10)
         fps_layout.addWidget(self.fps_value_label)
 
-        # Start button
+        # Start / Stop button
         self.start_button = QPushButton("Start")
         self.start_button.setFixedHeight(40)
+        self.start_button.clicked.connect(self.toggle_animation)
 
         main_layout.addLayout(top_layout)
         main_layout.addLayout(fps_layout)
@@ -113,9 +119,26 @@ class SpritePreview(QMainWindow):
         )
         self.image_label.setPixmap(scaled_pixmap)
 
-    def update_fps_label(self, value):
+    def next_frame(self):
+        self.current_frame = (self.current_frame + 1) % self.num_frames
+        self.show_current_frame()
+
+    def update_fps(self, value):
         self.fps = value
         self.fps_value_label.setText(str(value))
+        self.timer_delay = int(1000 / self.fps)
+
+        # If animation is already running, update the speed immediately
+        if self.timer.isActive():
+            self.timer.start(self.timer_delay)
+
+    def toggle_animation(self):
+        if self.start_button.text() == "Start":
+            self.timer.start(self.timer_delay)
+            self.start_button.setText("Stop")
+        else:
+            self.timer.stop()
+            self.start_button.setText("Start")
 
 
 def main():
